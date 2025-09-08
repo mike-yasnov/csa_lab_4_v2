@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from isa import DEFAULT_NUM_VECTORS, Instr, Opcode
 
 from .datapath import DataPath
