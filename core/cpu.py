@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
 
 from isa import DEFAULT_NUM_VECTORS, Instr, Opcode
 
@@ -21,7 +20,7 @@ class CPU:
         self.dp = DataPath(data_words, io)
         self.rs: list[int] = []  # return stack
         self.pc = 0
-        self.ir: Optional[Instr] = None
+        self.ir: Instr | None = None
         self.tick = 0
         self.tick_limit = tick_limit
 
@@ -37,7 +36,7 @@ class CPU:
         self._step = 0
         self._halted = False
         self.last_pc: int = 0
-        self.last_ir: Optional[Instr] = None
+        self.last_ir: Instr | None = None
         self._tmp_addr: int = 0
         self._tmp_val: int = 0
         self._tmp_alu: int = 0
