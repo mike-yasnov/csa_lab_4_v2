@@ -1,0 +1,7 @@
+{
+  "name": "hello_world",
+  "src": "/Users/myasnov/lab4_csa_v2/lab_implementation/examples/hello_world.alg",
+  "ticks": 2000,
+  "data_words": 1024,
+  "schedule": null
+}

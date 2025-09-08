@@ -1,0 +1,7 @@
+{
+  "name": "double_precision",
+  "src": "/Users/myasnov/lab4_csa_v2/lab_implementation/examples/double_precision.alg",
+  "ticks": 5000,
+  "data_words": 1024,
+  "schedule": "/Users/myasnov/lab4_csa_v2/lab_implementation/examples/double_precision.input"
+}
