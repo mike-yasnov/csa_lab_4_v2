@@ -24,7 +24,7 @@ class DataPath:
         self._last_mem_read: int = 0
         self._last_mem_write: int = 0
         self._last_alu: int = 0
-        self._mem_access: Optional[str] = None  # 'r' или 'w' на такт
+        self._mem_access: str | None = None  # 'r' или 'w' на такт
 
     def tick_begin(self):
         self._mem_access = None
