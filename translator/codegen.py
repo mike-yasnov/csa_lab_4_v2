@@ -231,12 +231,12 @@ class Codegen:
                 # end
                 self.code[l_end].arg = len(self.code)
                 return
-        raise NotImplementedError(f"expr not supported: {e}")
+        raise NotImplementedError("bad expr")
 
     def gen_stmt(self, s: Stmt):
         if isinstance(s, Break):
             if not self.break_stack:
-                raise NotImplementedError("break outside of loop")
+                raise NotImplementedError("bad break")
             pos = len(self.code)
             self.emit(Opcode.JMP, 0)
             self.break_stack[-1].append(pos)
