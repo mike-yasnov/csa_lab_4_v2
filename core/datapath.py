@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from isa import Opcode
 
 from .io import IOController
