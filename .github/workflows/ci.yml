@@ -38,9 +38,6 @@ jobs:
       - name: Install Poetry
         run: pipx install poetry
 
-      - name: Configure Poetry to not create venv
-        run: poetry config virtualenvs.create false
-
       - name: Install dependencies
         run: poetry install --no-interaction --no-ansi
 
