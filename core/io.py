@@ -22,7 +22,7 @@ class IOController:
             for ev in schedule:
                 self._schedule.setdefault(ev.tick, []).append(ev)
 
-        self._pending_irq: Optional[int] = None
+        self._pending_irq: int | None = None
 
     def on_tick(self, t: int):
         for ev in self._schedule.get(t, []):
@@ -30,7 +30,7 @@ class IOController:
             if self._pending_irq is None:
                 self._pending_irq = ev.port
 
-    def irq_pending(self) -> Optional[int]:
+    def irq_pending(self) -> int | None:
         return self._pending_irq
 
     def ack_irq(self):
