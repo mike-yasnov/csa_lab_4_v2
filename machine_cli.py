@@ -14,7 +14,7 @@ def parse_schedule(path: str):
     events = []
 
     def decode_char_token(tok: str) -> int:
-        # escaped char: \n, \t, \r, \0, \xHH
+        # escaped: \n, \t, \r, \0, \xHH
         if tok == "\\n":
             return 10
         if tok == "\\t":
@@ -36,7 +36,7 @@ def parse_schedule(path: str):
         # single literal char (A, B, 5 etc.)
         if len(tok) >= 1:
             return ord(tok[0])
-        raise ValueError(f"bad token: {tok}")
+        raise ValueError("bad token")
 
     with open(path, encoding="utf-8") as f:
         for line in f:
@@ -45,7 +45,7 @@ def parse_schedule(path: str):
                 continue
             parts = s.split()
             if len(parts) != 3:
-                raise ValueError("schedule line must be: <tick> <port> <value>")
+                raise ValueError("bad schedule line")
             tick = int(parts[0])
             port = int(parts[1])
             val_tok = parts[2]
