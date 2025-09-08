@@ -87,10 +87,13 @@ ignore = [
     "PTH118", # `os.path.join()` should be replaced by `Path` with `/` operator
     "UP032",  # Use f-string instead of `format` call
     "C901",   # Function is too complex
+    "ERA001", # commented-out code allowed in project docs/examples
+    "TRY003", # long messages in exceptions are acceptable
+    "PT018",  # assertion composition allowed in codegen tests
+    "RET504", # allow assignments before return when clearer
+    "Q000",   # allow single quotes
 ]
-unfixable = [
-    "ERA001", # prohibit to "auto-fix" (=remove) commented-out code
-]
+unfixable = []
 
 [tool.ruff.mccabe]
 max-complexity = 10
