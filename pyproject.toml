@@ -1,0 +1,110 @@
+[tool.poetry]
+name = "lab4-csa"
+version = "0.1.0"
+description = "Stack machine with Harvard architecture for Computer System Architecture"
+authors = ["Mikhail Yasnov <mike_yasnov@mail.ru>"]
+license = "MIT"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+coverage = "^7.2.7"
+mypy = "^1.4.1"
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+ruff = "^0.1.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+enable_assertion_pass_hook = true
+addopts = "--doctest-modules"
+log_format = "%(levelname)-7s %(module)s:%(funcName)-13s %(message)s"
+
+[tool.ruff]
+line-length = 120
+select = [
+    # pyflakes (simple obvious errors)
+    "F",
+    # pycodestyle (style linter, pep8, black-compatible)
+    "E",
+    "W",
+    # pep8-naming (style linter, pep8 naming conventions)
+    "N",
+    # isort (imports sorting)
+    "I",
+    # mccabe (cyclomatic complexity analyzer to prevent overcomplicated functions)
+    "C90",
+    # pyupgrade (possible syntax upgrades checker)
+    "UP",
+    # eradicate (commented-out code finder for it to be removed)
+    "ERA",
+    # flake8-2020 (errors related to sys.version or sys.version_info, just in case)
+    "YTT",
+    # flake8-async (async-related mistakes/errors)
+    "ASYNC",
+    # flake8-builtins (checks builtin names shadowing, it's better not to)
+    "A",
+    # flake8-commas (to enforce trailing commas)
+    "COM",
+    # flake8-future-annotations (to ensure enabling modern (3.7+) postponed evaluation of type hints)
+    "FA",
+    # flake8-import-conventions (to enforce standardized import aliases)
+    "ICN",
+    # flake8-no-pep420 (to enforce presence of __init__.py in packages)
+    "INP",
+    # flake8-print (to disallow print statements)
+    "T20",
+    # flake8-pytest-style (to improve pytest-related style consistency)
+    "PT",
+    # flake8-quotes (to enforce quotes style)
+    "Q",
+    # flake8-return (checks mistakes related to return values)
+    "RET",
+    # flake8-use-pathlib (to enforce pathlib usage instead of os.path)
+    "PTH",
+    # pandas-vet (pandas-related advices)
+    "PD",
+    # tryceratops (try/except-related advices)
+    "TRY",
+    # ruff-specific advices
+    "RUF",
+]
+ignore = [
+    "COM812", # May cause conflicts with formatter
+    "E501",   # Line too long (handled by formatter)
+    "T201",   # `print` found
+    "T203",   # `pprint` found
+    "RUF001", # String contains ambiguous unicode character
+    "RUF002", # Docstring contains ambiguous character
+    "RUF003", # Comment contains ambiguous character
+    "PTH123", # `open()` should be replaced by `Path.open()`
+    "PTH118", # `os.path.join()` should be replaced by `Path` with `/` operator
+    "UP032",  # Use f-string instead of `format` call
+    "C901",   # Function is too complex
+]
+unfixable = [
+    "ERA001", # prohibit to "auto-fix" (=remove) commented-out code
+]
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_untyped_calls = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+strict_equality = true
