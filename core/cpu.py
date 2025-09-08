@@ -224,7 +224,7 @@ class CPU:
             self.tick_inc()
             return
 
-        raise AssertionError(f"unknown or unhandled opcode: {op} step {self._step}")
+        raise AssertionError("bad opcode")
 
     def _finish_instruction(self):
         self._phase = "FETCH_IR"
