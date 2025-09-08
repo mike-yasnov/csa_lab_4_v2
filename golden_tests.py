@@ -149,7 +149,6 @@ def main():
         # compile fresh
         comp = compile_alg(src)
         fresh_hex: str = comp["hex"]  # type: ignore
-        fresh_blob: bytes = comp["blob"]  # type: ignore
         # use golden schedule if exists
         gsched = gdir / "schedule.txt"
         use_sched = gsched if gsched.exists() else (sched if sched and sched.exists() else None)
