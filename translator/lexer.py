@@ -22,8 +22,7 @@ def tokenize(src: str) -> Iterator[Token]:
 
     def emit(kind: str, value: str):
         nonlocal line, col
-        tok = Token(kind, value, line, col)
-        return tok
+        return Token(kind, value, line, col)
 
     while i < len(src):
         ch = src[i]
@@ -89,4 +88,4 @@ def tokenize(src: str) -> Iterator[Token]:
             i += 1
             col += 1
             continue
-        raise SyntaxError(f"Unexpected char {ch!r} at {line}:{col}")
+        raise SyntaxError("bad char")
