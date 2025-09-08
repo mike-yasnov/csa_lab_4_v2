@@ -1,24 +1,18 @@
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
-import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
 
-
-# Ensure local package imports work when running directly
-REPO_ROOT = Path(__file__).resolve().parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
-from translator.parser import parse_source  # type: ignore
-from translator.codegen import Codegen  # type: ignore
-from isa import encode, to_hex  # type: ignore
 from core.runner import run_machine  # type: ignore
+from isa import encode, to_hex  # type: ignore
 from machine_cli import parse_schedule  # type: ignore
-import difflib
+from translator.codegen import Codegen  # type: ignore
+from translator.parser import parse_source  # type: ignore
+
+REPO_ROOT = Path(__file__).resolve().parent
 
 
 def read_text(path: Path) -> str:
@@ -35,7 +29,7 @@ def write_bytes(path: Path, data: bytes):
     path.write_bytes(data)
 
 
-def compile_alg(src_path: Path) -> Dict[str, object]:
+def compile_alg(src_path: Path) -> dict[str, object]:
     src = read_text(src_path)
     prog = parse_source(src)
     cg = Codegen()
@@ -45,8 +39,8 @@ def compile_alg(src_path: Path) -> Dict[str, object]:
     return {"code": code, "blob": blob, "hex": hexdump}
 
 
-def format_outputs(out: Dict[int, List[int]]) -> str:
-    lines: List[str] = []
+def format_outputs(out: dict[int, list[int]]) -> str:
+    lines: list[str] = []
     if out.get(1):
         s = bytes([v & 0xFF for v in out[1]]).decode("latin1", errors="replace")
         lines.append(f"CH| {s}")
@@ -72,7 +66,7 @@ def generate_golden(
     name: str,
     src_path: Path,
     out_dir: Path,
-    schedule_path: Optional[Path],
+    schedule_path: Path | None,
     ticks: int,
     data_words: int = 1024,
 ):
@@ -86,9 +80,8 @@ def generate_golden(
 
     # Compile
     comp = compile_alg(src_path)
-    blob: bytes = comp["blob"]  # type: ignore
     hexdump: str = comp["hex"]  # type: ignore
-    write_bytes(test_dir / "program.bin", blob)
+    write_bytes(test_dir / "program.bin", comp["blob"])  # type: ignore[arg-type]
     write_text(test_dir / "program.hex", hexdump)
 
     # Run with optional schedule and trace
@@ -110,14 +103,24 @@ def generate_golden(
     write_text(test_dir / "meta.json", json.dumps(meta, indent=2, ensure_ascii=False))
 
 
-def discover_tests(project_root: Path) -> List[Dict[str, object]]:
+def discover_tests(project_root: Path) -> list[dict[str, object]]:
     ex = project_root / "examples"
     return [
         {"name": "hello_world", "src": ex / "hello_world.alg", "sched": None, "ticks": 2000},
         {"name": "cat", "src": ex / "cat.alg", "sched": ex / "cat.input", "ticks": 200},
-        {"name": "hello_user_name", "src": ex / "hello_user_name.alg", "sched": ex / "hello_user_name.input", "ticks": 8000},
+        {
+            "name": "hello_user_name",
+            "src": ex / "hello_user_name.alg",
+            "sched": ex / "hello_user_name.input",
+            "ticks": 8000,
+        },
         {"name": "prob2", "src": ex / "prob2.alg", "sched": ex / "prob2.input", "ticks": 4000},
-        {"name": "double_precision", "src": ex / "double_precision.alg", "sched": ex / "double_precision.input", "ticks": 5000},
+        {
+            "name": "double_precision",
+            "src": ex / "double_precision.alg",
+            "sched": ex / "double_precision.input",
+            "ticks": 5000,
+        },
         {"name": "sort", "src": ex / "sort.alg", "sched": ex / "sort.input", "ticks": 120000},
         {"name": "cat_trap", "src": ex / "cat_trap.alg", "sched": ex / "cat.input", "ticks": 200},
     ]
@@ -140,7 +143,7 @@ def main():
         names = set(args.only)
         tests = [t for t in tests if t["name"] in names]
 
-    def verify_one(name: str, src: Path, sched: Optional[Path], ticks: int) -> bool:
+    def verify_one(name: str, src: Path, sched: Path | None, ticks: int) -> bool:
         gdir = out_dir / name
         ok = True
         # compile fresh
@@ -153,13 +156,26 @@ def main():
         schedule = parse_schedule(str(use_sched)) if use_sched else []
         # run fresh
         trace_tmp = gdir / "trace.tmp.txt"
-        out = run_machine(str(gdir / "program.bin"), schedule, 1024, ticks, trace=args.check_trace, trace_file=str(trace_tmp) if args.check_trace else None)
+        out = run_machine(
+            str(gdir / "program.bin"),
+            schedule,
+            1024,
+            ticks,
+            trace=args.check_trace,
+            trace_file=str(trace_tmp) if args.check_trace else None,
+        )
         fresh_out = format_outputs(out)
         # compare outputs
         expected_out = (gdir / "out.txt").read_text(encoding="utf-8") if (gdir / "out.txt").exists() else ""
         if fresh_out != expected_out:
             print(f"[mismatch][{name}] out.txt differs")
-            for line in difflib.unified_diff(expected_out.splitlines(), fresh_out.splitlines(), fromfile="golden/out.txt", tofile="fresh/out.txt", lineterm=""):
+            for line in difflib.unified_diff(
+                expected_out.splitlines(),
+                fresh_out.splitlines(),
+                fromfile="golden/out.txt",
+                tofile="fresh/out.txt",
+                lineterm="",
+            ):
                 print(line)
             ok = False
         # compare hex optionally
@@ -167,7 +183,13 @@ def main():
             expected_hex = (gdir / "program.hex").read_text(encoding="utf-8") if (gdir / "program.hex").exists() else ""
             if fresh_hex != expected_hex:
                 print(f"[mismatch][{name}] program.hex differs")
-                for line in difflib.unified_diff(expected_hex.splitlines(), fresh_hex.splitlines(), fromfile="golden/program.hex", tofile="fresh/program.hex", lineterm=""):
+                for line in difflib.unified_diff(
+                    expected_hex.splitlines(),
+                    fresh_hex.splitlines(),
+                    fromfile="golden/program.hex",
+                    tofile="fresh/program.hex",
+                    lineterm="",
+                ):
                     print(line)
                 ok = False
         # compare trace optionally
@@ -210,5 +232,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
