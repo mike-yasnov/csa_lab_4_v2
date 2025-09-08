@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Optional
 
 
 @dataclass
@@ -14,10 +14,10 @@ class IOEvent:
 class IOController:
     """Контроллер портов с расписанием событий (trap)."""
 
-    def __init__(self, schedule: List[IOEvent] | None = None):
-        self._in_queues: Dict[int, List[int]] = {}
-        self._out_queues: Dict[int, List[int]] = {}
-        self._schedule: Dict[int, List[IOEvent]] = {}
+    def __init__(self, schedule: list[IOEvent] | None = None):
+        self._in_queues: dict[int, list[int]] = {}
+        self._out_queues: dict[int, list[int]] = {}
+        self._schedule: dict[int, list[IOEvent]] = {}
         if schedule:
             for ev in schedule:
                 self._schedule.setdefault(ev.tick, []).append(ev)
@@ -45,8 +45,5 @@ class IOController:
     def write_port(self, port: int, value: int):
         self._out_queues.setdefault(port, []).append(value)
 
-    def out_dump(self) -> Dict[int, List[int]]:
+    def out_dump(self) -> dict[int, list[int]]:
         return {p: list(buf) for p, buf in self._out_queues.items()}
-
-
-

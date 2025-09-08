@@ -12,6 +12,7 @@ except ImportError:
 
 def parse_schedule(path: str):
     events = []
+
     def decode_char_token(tok: str) -> int:
         # escaped char: \n, \t, \r, \0, \xHH
         if tok == "\\n":
@@ -91,5 +92,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

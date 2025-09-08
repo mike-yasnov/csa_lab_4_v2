@@ -1,13 +1,19 @@
 from __future__ import annotations
 
-from typing import List, Dict
-
 from isa import decode
-from .io import IOController, IOEvent
+
 from .cpu import CPU
+from .io import IOController, IOEvent
 
 
-def run_machine(code_bin_path: str, input_schedule: List[IOEvent], data_words: int, tick_limit: int, trace: bool = False, trace_file: str | None = None) -> Dict[int, List[int]]:
+def run_machine(
+    code_bin_path: str,
+    input_schedule: list[IOEvent],
+    data_words: int,
+    tick_limit: int,
+    trace: bool = False,
+    trace_file: str | None = None,
+) -> dict[int, list[int]]:
     with open(code_bin_path, "rb") as f:
         blob = f.read()
     code = decode(blob)
@@ -29,5 +35,3 @@ def run_machine(code_bin_path: str, input_schedule: List[IOEvent], data_words: i
         if trace_out:
             trace_out.close()
     return io.out_dump()
-
-

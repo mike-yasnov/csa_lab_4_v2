@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Optional
 
 from isa import Opcode
+
 from .io import IOController
 
 
@@ -13,7 +14,7 @@ class DataPath:
         self.mem = [0] * max(1, data_words)
         self.io = io
 
-        self.stack: List[int] = []
+        self.stack: list[int] = []
         self.t: int = 0
         self.z: int = 0
         self.ar: int = 0
@@ -74,7 +75,7 @@ class DataPath:
         if idx >= len(self.mem):
             self.mem.extend([0] * (idx - len(self.mem) + 1))
         self._last_mem_read = self.mem[idx] & 0xFFFF_FFFF
-        self._mem_access = 'r'
+        self._mem_access = "r"
 
     def dm_write(self, value: int):
         assert self._mem_access is None, "single-port memory: read/write conflict"
@@ -83,7 +84,7 @@ class DataPath:
             self.mem.extend([0] * (idx - len(self.mem) + 1))
         self._last_mem_write = value & 0xFFFF_FFFF
         self.mem[idx] = self._last_mem_write
-        self._mem_access = 'w'
+        self._mem_access = "w"
 
     # IO
     def latch_io_read(self, port: int):
@@ -115,5 +116,3 @@ class DataPath:
         self._last_alu = r
         self.zero = (r & 0xFFFF_FFFF) == 0
         self.sign = (r & 0x8000_0000) != 0
-
-

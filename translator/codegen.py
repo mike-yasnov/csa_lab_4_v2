@@ -1,24 +1,39 @@
 from __future__ import annotations
 
-from typing import Dict, List
-
 try:
-    from ..isa import Instr, Opcode, DEFAULT_NUM_VECTORS
+    from ..isa import DEFAULT_NUM_VECTORS, Instr, Opcode
 except ImportError:
-    from isa import Instr, Opcode, DEFAULT_NUM_VECTORS
-from .parser import Program, Func, Stmt, VarDecl, Assign, While, PrintInt, PrintStr, PrintChar, Break, If, Expr, IntLit, Var, BinOp, Call
+    from isa import DEFAULT_NUM_VECTORS, Instr, Opcode
+from .parser import (
+    Assign,
+    BinOp,
+    Break,
+    Call,
+    Expr,
+    Func,
+    If,
+    IntLit,
+    PrintChar,
+    PrintInt,
+    PrintStr,
+    Program,
+    Stmt,
+    Var,
+    VarDecl,
+    While,
+)
 
 
 class Codegen:
     def __init__(self):
-        self.code: List[Instr] = []
-        self.labels: Dict[str, int] = {}
-        self.vars: Dict[str, int] = {}  # переменные в статической памяти (адрес)
+        self.code: list[Instr] = []
+        self.labels: dict[str, int] = {}
+        self.vars: dict[str, int] = {}  # переменные в статической памяти (адрес)
         self.data_next = 0
-        self.break_stack: List[List[int]] = []
-        self.var_types: Dict[str, str] = {}
-        self.array_bases: Dict[str, int] = {}
-        self.string_bases: Dict[str, int] = {}
+        self.break_stack: list[list[int]] = []
+        self.var_types: dict[str, str] = {}
+        self.array_bases: dict[str, int] = {}
+        self.string_bases: dict[str, int] = {}
 
     def _ensure_cstr_literal(self, text: str) -> int:
         """Ensure c-string literal is placed in data memory and a pointer cell exists.
@@ -139,7 +154,7 @@ class Codegen:
                 # if ch == '\n' -> end
                 self.emit(Opcode.PUSHI, ch)
                 self.emit(Opcode.LOAD)
-                self.emit(Opcode.PUSHI, ord('\n'))
+                self.emit(Opcode.PUSHI, ord("\n"))
                 self.emit(Opcode.SUB)
                 jz = len(self.code)
                 self.emit(Opcode.JZ, 0)
@@ -150,7 +165,7 @@ class Codegen:
                 self.emit(Opcode.MUL)
                 self.emit(Opcode.PUSHI, ch)
                 self.emit(Opcode.LOAD)
-                self.emit(Opcode.PUSHI, ord('0'))
+                self.emit(Opcode.PUSHI, ord("0"))
                 self.emit(Opcode.SUB)
                 self.emit(Opcode.ADD)
                 self.emit(Opcode.PUSHI, tmp)
@@ -251,7 +266,7 @@ class Codegen:
                 self.emit(Opcode.IN, 1)
                 # if ch == '\n' -> end
                 self.emit(Opcode.DUP)
-                self.emit(Opcode.PUSHI, ord('\n'))
+                self.emit(Opcode.PUSHI, ord("\n"))
                 self.emit(Opcode.SUB)
                 jz_end = len(self.code)
                 self.emit(Opcode.JZ, 0)
@@ -292,6 +307,7 @@ class Codegen:
                     return
                 # a = b + c (long)
                 if isinstance(s.expr, BinOp) and s.expr.op == "+":
+
                     def gen_load_long(var: Var):
                         addr = self.alloc_var(var.name)
                         # lo
@@ -300,6 +316,7 @@ class Codegen:
                         # hi на стек сверху
                         self.emit(Opcode.PUSHI, addr + 1)
                         self.emit(Opcode.LOAD)
+
                     assert isinstance(s.expr.a, Var) and isinstance(s.expr.b, Var)
                     gen_load_long(s.expr.a)  # a_lo, a_hi
                     gen_load_long(s.expr.b)  # b_lo, b_hi (в вершине b_hi)
@@ -310,47 +327,68 @@ class Codegen:
                     tmp_lo = self.alloc_var("__tmp_lo__")
                     tmp_hi = self.alloc_var("__tmp_hi__")
                     # pop b_hi -> tmp_hi
-                    self.emit(Opcode.PUSHI, tmp_hi); self.emit(Opcode.SWAP)  # не хватает SWAP с адресом
+                    self.emit(Opcode.PUSHI, tmp_hi)
+                    self.emit(Opcode.SWAP)  # не хватает SWAP с адресом
                     # Из-за ограничений стековой модели, используем прямые LOAD для чтения из памяти повторно:
                     # lo_sum = (a_lo + b_lo)
-                    self.emit(Opcode.PUSHI, self.alloc_var(s.expr.a.name)); self.emit(Opcode.LOAD)
-                    self.emit(Opcode.PUSHI, self.alloc_var(s.expr.b.name)); self.emit(Opcode.LOAD)
+                    self.emit(Opcode.PUSHI, self.alloc_var(s.expr.a.name))
+                    self.emit(Opcode.LOAD)
+                    self.emit(Opcode.PUSHI, self.alloc_var(s.expr.b.name))
+                    self.emit(Opcode.LOAD)
                     self.emit(Opcode.ADD)
                     # tmp_lo = lo_sum
-                    self.emit(Opcode.PUSHI, tmp_lo); self.emit(Opcode.STORE)
+                    self.emit(Opcode.PUSHI, tmp_lo)
+                    self.emit(Opcode.STORE)
                     # carry = lo_sum < a_lo
                     # compute a_lo - 1
-                    self.emit(Opcode.PUSHI, self.alloc_var(s.expr.a.name)); self.emit(Opcode.LOAD)
-                    self.emit(Opcode.PUSHI, 1); self.emit(Opcode.SUB)  # a_lo-1
+                    self.emit(Opcode.PUSHI, self.alloc_var(s.expr.a.name))
+                    self.emit(Opcode.LOAD)
+                    self.emit(Opcode.PUSHI, 1)
+                    self.emit(Opcode.SUB)  # a_lo-1
                     # push lo_sum
-                    self.emit(Opcode.PUSHI, tmp_lo); self.emit(Opcode.LOAD)
+                    self.emit(Opcode.PUSHI, tmp_lo)
+                    self.emit(Opcode.LOAD)
                     # test lo_sum <= a_lo-1
                     self.emit(Opcode.LE)
                     # now T is 1 if carry else 0
                     # hi_sum = a_hi + b_hi
-                    self.emit(Opcode.PUSHI, self.alloc_var(s.expr.a.name) + 1); self.emit(Opcode.LOAD)
-                    self.emit(Opcode.PUSHI, self.alloc_var(s.expr.b.name) + 1); self.emit(Opcode.LOAD)
+                    self.emit(Opcode.PUSHI, self.alloc_var(s.expr.a.name) + 1)
+                    self.emit(Opcode.LOAD)
+                    self.emit(Opcode.PUSHI, self.alloc_var(s.expr.b.name) + 1)
+                    self.emit(Opcode.LOAD)
                     self.emit(Opcode.ADD)
-                    self.emit(Opcode.PUSHI, tmp_hi); self.emit(Opcode.STORE)
+                    self.emit(Opcode.PUSHI, tmp_hi)
+                    self.emit(Opcode.STORE)
                     # if carry then tmp_hi = tmp_hi + 1
-                    jz = len(self.code); self.emit(Opcode.JZ, 0)
-                    self.emit(Opcode.PUSHI, tmp_hi); self.emit(Opcode.LOAD)
-                    self.emit(Opcode.PUSHI, 1); self.emit(Opcode.ADD)
-                    self.emit(Opcode.PUSHI, tmp_hi); self.emit(Opcode.STORE)
-                    endc = len(self.code); self.emit(Opcode.JMP, 0)
+                    jz = len(self.code)
+                    self.emit(Opcode.JZ, 0)
+                    self.emit(Opcode.PUSHI, tmp_hi)
+                    self.emit(Opcode.LOAD)
+                    self.emit(Opcode.PUSHI, 1)
+                    self.emit(Opcode.ADD)
+                    self.emit(Opcode.PUSHI, tmp_hi)
+                    self.emit(Opcode.STORE)
+                    endc = len(self.code)
+                    self.emit(Opcode.JMP, 0)
                     self.code[jz].arg = len(self.code)
                     self.code[endc].arg = len(self.code)
                     # store to a
-                    self.emit(Opcode.PUSHI, tmp_lo); self.emit(Opcode.LOAD)
-                    self.emit(Opcode.PUSHI, base); self.emit(Opcode.STORE)
-                    self.emit(Opcode.PUSHI, tmp_hi); self.emit(Opcode.LOAD)
-                    self.emit(Opcode.PUSHI, base_hi); self.emit(Opcode.STORE)
+                    self.emit(Opcode.PUSHI, tmp_lo)
+                    self.emit(Opcode.LOAD)
+                    self.emit(Opcode.PUSHI, base)
+                    self.emit(Opcode.STORE)
+                    self.emit(Opcode.PUSHI, tmp_hi)
+                    self.emit(Opcode.LOAD)
+                    self.emit(Opcode.PUSHI, base_hi)
+                    self.emit(Opcode.STORE)
                     return
                 # fallback: присваивание из 32-бит (lo), hi=0
                 self.gen_expr(s.expr)
-                self.emit(Opcode.PUSHI, base); self.emit(Opcode.STORE)
+                self.emit(Opcode.PUSHI, base)
+                self.emit(Opcode.STORE)
                 self.emit(Opcode.PUSHI, 0)
-                self.emit(Opcode.PUSHI, base_hi); self.emit(Opcode.STORE)
+                self.emit(Opcode.PUSHI, base_hi)
+                self.emit(Opcode.STORE)
                 return
             # обычное присваивание (int/char)
             self.gen_expr(s.expr)
@@ -413,9 +451,11 @@ class Codegen:
             if s.name == "printLong" and len(s.args) == 1 and isinstance(s.args[0], Var):
                 base = self.alloc_var(s.args[0].name)
                 # out lo, then hi to Port L
-                self.emit(Opcode.PUSHI, base); self.emit(Opcode.LOAD)
+                self.emit(Opcode.PUSHI, base)
+                self.emit(Opcode.LOAD)
                 self.emit(Opcode.OUT, 3)
-                self.emit(Opcode.PUSHI, base + 1); self.emit(Opcode.LOAD)
+                self.emit(Opcode.PUSHI, base + 1)
+                self.emit(Opcode.LOAD)
                 self.emit(Opcode.OUT, 3)
                 return
             if s.name == "set" and len(s.args) == 3 and isinstance(s.args[0], Var):
@@ -437,7 +477,7 @@ class Codegen:
             # runtime: печать целого через порт D (числовой), затем перевод строки в CH
             self.gen_expr(s.expr)
             self.emit(Opcode.OUT, 2)  # Port.D = 2
-            self.emit(Opcode.PUSHI, ord('\n'))
+            self.emit(Opcode.PUSHI, ord("\n"))
             self.emit(Opcode.OUT, 1)  # Port.CH = 1
             return
         if isinstance(s, PrintStr):
@@ -476,7 +516,7 @@ class Codegen:
         else:
             self.emit(Opcode.RET)
 
-    def gen(self, prog: Program) -> List[Instr]:
+    def gen(self, prog: Program) -> list[Instr]:
         # таблица векторов прерываний (DEFAULT_NUM_VECTORS слов в начале)
         # по умолчанию — все на NOP; IRQ0,1,2... содержат адресы обработчиков
         # пока обработчики не генерируем, поэтому заполним jump на main.
@@ -503,5 +543,3 @@ class Codegen:
             if fname in self.labels:
                 vectors[i] = Instr(Opcode.JMP, start_main + self.labels[fname])
         return vectors + self.code
-
-

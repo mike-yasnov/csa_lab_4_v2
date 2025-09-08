@@ -28,10 +28,13 @@ def tokenize(src: str) -> Iterator[Token]:
     while i < len(src):
         ch = src[i]
         if ch in " \t\r":
-            i += 1; col += 1
+            i += 1
+            col += 1
             continue
         if ch == "\n":
-            i += 1; line += 1; col = 1
+            i += 1
+            line += 1
+            col = 1
             continue
         if ch == "/" and i + 1 < len(src) and src[i + 1] == "/":
             # comment till EOL
@@ -45,40 +48,45 @@ def tokenize(src: str) -> Iterator[Token]:
             val = src[i:j]
             kind = "KW" if val in KEYWORDS else "ID"
             yield emit(kind, val)
-            col += j - i; i = j
+            col += j - i
+            i = j
             continue
         if ch.isdigit():
             j = i + 1
             while j < len(src) and src[j].isdigit():
                 j += 1
             yield emit("INT", src[i:j])
-            col += j - i; i = j
+            col += j - i
+            i = j
             continue
         if ch == '"':
             j = i + 1
             buf = []
             while j < len(src) and src[j] != '"':
-                buf.append(src[j]); j += 1
+                buf.append(src[j])
+                j += 1
             j += 1
             yield emit("STR", "".join(buf))
-            col += j - i; i = j
+            col += j - i
+            i = j
             continue
         # two-char operators
         if i + 1 < len(src):
             two = src[i : i + 2]
             if two in {"<=", ">=", "==", "!="}:
                 yield emit(two, two)
-                i += 2; col += 2
+                i += 2
+                col += 2
                 continue
         # single char tokens
         if ch in "{}();,=+-*/<>!":
             yield emit(ch, ch)
-            i += 1; col += 1
+            i += 1
+            col += 1
             continue
         if ch in "[]":
             yield emit(ch, ch)
-            i += 1; col += 1
+            i += 1
+            col += 1
             continue
         raise SyntaxError(f"Unexpected char {ch!r} at {line}:{col}")
-
-

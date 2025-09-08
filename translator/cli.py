@@ -4,13 +4,13 @@ import argparse
 
 try:
     from ..isa import encode, to_hex
-    from .parser import parse_source
     from .codegen import Codegen
+    from .parser import parse_source
 except ImportError:
     # запуск как пакет из каталога lab_implementation (translator — пакет верхнего уровня)
     from isa import encode, to_hex
-    from translator.parser import parse_source
     from translator.codegen import Codegen
+    from translator.parser import parse_source
 
 
 def main():
@@ -36,5 +36,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

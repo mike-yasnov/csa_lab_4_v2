@@ -26,14 +26,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import List, Tuple
 
 
 class Opcode(IntEnum):
     # Stack/memory
     NOP = 0x00
     PUSHI = 0x01  # push immediate (signed 24-bit)
-    LOAD = 0x02   # pop addr -> push mem[addr]
+    LOAD = 0x02  # pop addr -> push mem[addr]
     STORE = 0x03  # pop value; pop addr -> mem[addr] = value
     DUP = 0x04
     DROP = 0x05
@@ -50,7 +49,7 @@ class Opcode(IntEnum):
 
     # Control flow
     JMP = 0x20
-    JZ = 0x21   # pop cond; if cond == 0 then jump arg else PC++
+    JZ = 0x21  # pop cond; if cond == 0 then jump arg else PC++
     CALL = 0x22
     RET = 0x23
     IRET = 0x24
@@ -58,7 +57,7 @@ class Opcode(IntEnum):
     DI = 0x26
 
     # IO (port-mapped)
-    IN = 0x30   # arg = port id; push value from port buffer
+    IN = 0x30  # arg = port id; push value from port buffer
     OUT = 0x31  # arg = port id; pop value -> port buffer
 
     HALT = 0xFF
@@ -96,7 +95,7 @@ class Instr:
     arg: int = 0
 
 
-def encode(instrs: List[Instr]) -> bytes:
+def encode(instrs: list[Instr]) -> bytes:
     out = bytearray()
     for ins in instrs:
         word = ((int(ins.opcode) & 0xFF) << 24) | (ins.arg & 0x00FF_FFFF)
@@ -105,8 +104,8 @@ def encode(instrs: List[Instr]) -> bytes:
     return bytes(out)
 
 
-def decode(blob: bytes) -> List[Instr]:
-    code: List[Instr] = []
+def decode(blob: bytes) -> list[Instr]:
+    code: list[Instr] = []
     for i in range(0, len(blob), 4):
         if i + 3 >= len(blob):
             break
@@ -121,8 +120,8 @@ def decode(blob: bytes) -> List[Instr]:
     return code
 
 
-def to_hex(code: List[Instr]) -> str:
-    lines: List[str] = []
+def to_hex(code: list[Instr]) -> str:
+    lines: list[str] = []
     for addr, ins in enumerate(code):
         word = ((int(ins.opcode) & 0xFF) << 24) | (ins.arg & 0x00FF_FFFF)
         mnem = MNEMONICS[ins.opcode]
@@ -134,13 +133,10 @@ def to_hex(code: List[Instr]) -> str:
 
 # Порты ввода-вывода (port-mapped)
 class Port(IntEnum):
-    CH = 1   # символьный поток
-    D = 2    # поток целых (32-бит)
-    L = 3    # поток long (64-бит представляется в порту как два слова)
+    CH = 1  # символьный поток
+    D = 2  # поток целых (32-бит)
+    L = 3  # поток long (64-бит представляется в порту как два слова)
 
 
 # Размер таблицы векторов прерываний (первые слова памяти инструкций)
 DEFAULT_NUM_VECTORS = 8
-
-
-

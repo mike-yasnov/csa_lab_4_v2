@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional, Iterator
+from typing import Iterator, Optional
 
 from .lexer import Token, tokenize
 
@@ -9,13 +9,13 @@ from .lexer import Token, tokenize
 # AST для подмножества prob2.alg
 @dataclass
 class Program:
-    functions: List["Func"]
+    functions: list[Func]
 
 
 @dataclass
 class Func:
     name: str
-    body: List["Stmt"]
+    body: list[Stmt]
 
 
 class Stmt:  # маркер
@@ -31,18 +31,18 @@ class VarDecl(Stmt):
 @dataclass
 class Assign(Stmt):
     name: str
-    expr: "Expr"
+    expr: Expr
 
 
 @dataclass
 class While(Stmt):
-    cond: "Expr"
-    body: List[Stmt]
+    cond: Expr
+    body: list[Stmt]
 
 
 @dataclass
 class PrintInt(Stmt):
-    expr: "Expr"
+    expr: Expr
 
 
 @dataclass
@@ -52,7 +52,7 @@ class PrintStr(Stmt):
 
 @dataclass
 class PrintChar(Stmt):
-    expr: "Expr"
+    expr: Expr
 
 
 @dataclass
@@ -62,9 +62,9 @@ class Break(Stmt):
 
 @dataclass
 class If(Stmt):
-    cond: "Expr"
-    then_body: List[Stmt]
-    else_body: List[Stmt] | None = None
+    cond: Expr
+    then_body: list[Stmt]
+    else_body: list[Stmt] | None = None
 
 
 @dataclass
@@ -92,7 +92,7 @@ class BinOp(Expr):
 @dataclass
 class Call(Expr):
     name: str
-    args: List[Expr]
+    args: list[Expr]
 
 
 class Parser:
@@ -116,7 +116,7 @@ class Parser:
         return self.cur().value == value
 
     def parse(self) -> Program:
-        funcs: List[Func] = []
+        funcs: list[Func] = []
         while self.i < len(self.tokens):
             funcs.append(self.parse_func())
         return Program(funcs)
@@ -127,7 +127,7 @@ class Parser:
         self.eat("(")
         self.eat(")")
         self.eat("{")
-        body: List[Stmt] = []
+        body: list[Stmt] = []
         while not self.match("}"):
             body.append(self.parse_stmt())
         self.eat("}")
@@ -141,7 +141,8 @@ class Parser:
             self.eat(";")
             return VarDecl(vtype, name)
         if t.kind == "KW" and t.value == "break":
-            self.eat("KW", "break"); self.eat(";")
+            self.eat("KW", "break")
+            self.eat(";")
             return Break()
         if t.kind == "KW" and t.value == "if":
             self.eat("KW", "if")
@@ -149,11 +150,11 @@ class Parser:
             cond = self.parse_expr()
             self.eat(")")
             self.eat("{")
-            body: List[Stmt] = []
+            body: list[Stmt] = []
             while not self.match("}"):
                 body.append(self.parse_stmt())
             self.eat("}")
-            else_body: List[Stmt] | None = None
+            else_body: list[Stmt] | None = None
             if self.i < len(self.tokens) and self.cur().value == "else":
                 self.eat("KW", "else")
                 self.eat("{")
@@ -168,7 +169,7 @@ class Parser:
             cond = self.parse_expr()
             self.eat(")")
             self.eat("{")
-            body: List[Stmt] = []
+            body: list[Stmt] = []
             while not self.match("}"):
                 body.append(self.parse_stmt())
             self.eat("}")
@@ -186,17 +187,19 @@ class Parser:
             self.eat("(")
             if self.cur().kind == "STR":
                 s = self.eat("STR").value
-                self.eat(")"); self.eat(";")
+                self.eat(")")
+                self.eat(";")
                 return PrintStr(s)
             e = self.parse_expr()
-            self.eat(")"); self.eat(";")
+            self.eat(")")
+            self.eat(";")
             return PrintChar(e)
         if t.kind == "ID":
             name = self.eat("ID").value
             # вызов-процедура или присваивание
             if self.cur().value == "(":
                 self.eat("(")
-                args: List[Expr] = []
+                args: list[Expr] = []
                 if self.cur().value != ")":
                     args.append(self.parse_expr())
                     while self.cur().value == ",":
@@ -228,7 +231,7 @@ class Parser:
                 # возможен вызов функции
                 if self.i < len(self.tokens) and self.cur().value == "(":
                     self.eat("(")
-                    args: List[Expr] = []
+                    args: list[Expr] = []
                     if self.cur().value != ")":
                         args.append(self.parse_expr())
                         while self.cur().value == ",":
@@ -268,5 +271,3 @@ class Parser:
 
 def parse_source(src: str) -> Program:
     return Parser(tokenize(src)).parse()
-
-
