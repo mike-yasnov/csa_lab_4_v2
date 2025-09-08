@@ -45,7 +45,7 @@ class DataPath:
         self._refresh_tz()
         return v
 
-    def latch_t_push(self, source: str, value: Optional[int] = None):
+    def latch_t_push(self, source: str, value: int | None = None):
         if source == "lit":
             assert value is not None
             self.data_push(value)
@@ -70,7 +70,7 @@ class DataPath:
 
     # Однопортовая память
     def dm_read(self):
-        assert self._mem_access is None, "single-port memory: read/write conflict"
+        assert self._mem_access is None, "dm conflict"
         idx = self.ar
         if idx >= len(self.mem):
             self.mem.extend([0] * (idx - len(self.mem) + 1))
@@ -78,7 +78,7 @@ class DataPath:
         self._mem_access = "r"
 
     def dm_write(self, value: int):
-        assert self._mem_access is None, "single-port memory: read/write conflict"
+        assert self._mem_access is None, "dm conflict"
         idx = self.ar
         if idx >= len(self.mem):
             self.mem.extend([0] * (idx - len(self.mem) + 1))
