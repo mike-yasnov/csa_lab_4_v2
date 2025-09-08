@@ -103,12 +103,12 @@ class Parser:
     def cur(self) -> Token:
         return self.tokens[self.i]
 
-    def eat(self, kind: Optional[str] = None, value: Optional[str] = None) -> Token:
+    def eat(self, kind: str | None = None, value: str | None = None) -> Token:
         t = self.cur()
         if kind and t.kind != kind:
-            raise SyntaxError(f"expected {kind}, got {t.kind}")
+            raise SyntaxError("bad token kind")
         if value and t.value != value:
-            raise SyntaxError(f"expected {value}, got {t.value}")
+            raise SyntaxError("bad token value")
         self.i += 1
         return t
 
