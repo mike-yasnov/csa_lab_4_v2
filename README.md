@@ -83,7 +83,7 @@
 2. Память команд. Машинное слово — 32 бита. Адреса по 32 бита. Линейное адресное пространство. Только абсолютная адресация. Гарвардская архитектура — отдельная память для инструкций:
    - Инструкции с аргументами занимают машинное слово целиком (32 бита): старший байт — опкод, младшие 24 бита — аргумент.
    - Все инструкции имеют единый формат, что упрощает декодирование.
-3. Стек данных. Неограниченный стек для вычислений. Видимые регистры: `T` (вершина) и `Z` (второй элемент).
+3. Стек данных. Неограниченный стек для вычислений. Видимые регистры: `T` (вершина) и `S` (второй элемент).
 4. Стек возвратов. Отдельный стек для адресов возврата из подпрограмм и прерываний.
 
 Напрямую влиять программист может только на память данных, стек данных и регистр T (вершину стека). Также возможно неявное влияние на стек возврата вызовом процедур и возвратом из них.
@@ -100,7 +100,7 @@
        Registers
 +------------------------------+
 | T                            |
-| Z                            |
+| S                            |
 | AR (Address Register)        |
 | IO (I/O Register)            |
 | IR (Instruction Register)    |
@@ -182,13 +182,13 @@
 #### Арифметические операции
 
 - `0x10` — `ADD` — Сложение двух чисел с вершины стека (5 тактов)
-- `0x11` — `SUB` — Вычитание (T = Z - T) (5 тактов)
+- `0x11` — `SUB` — Вычитание (T = S - T) (5 тактов)
 - `0x12` — `MUL` — Умножение (5 тактов)
-- `0x13` — `DIV` — Целочисленное деление (T = Z / T) (5 тактов)
+- `0x13` — `DIV` — Целочисленное деление (T = S / T) (5 тактов)
 
 #### Операции сравнения
 
-- `0x41` — `LE` — Меньше или равно (Z <= T), результат 0 или 1 (5 тактов)
+- `0x41` — `LE` — Меньше или равно (S <= T), результат 0 или 1 (5 тактов)
 
 #### Управление потоком
 
@@ -304,7 +304,7 @@
 Регистры:
 
 - `T` — вершина стека данных (32 бита)
-- `Z` — второй элемент стека (32 бита)  
+- `S` — второй элемент стека (32 бита)  
 - `AR` — регистр адреса для обращения к памяти (32 бита)
 - `IO` — регистр ввода-вывода (32 бита)
 
@@ -341,7 +341,7 @@
 
 - Цикл симуляции осуществляется в функции `run_machine` ([core/runner.py](./core/runner.py))
 - Шаг моделирования соответствует одному такту с выводом состояния в трассу
-- Трассировка включает: tick, phase, PC, T, Z, AR, flags, in_isr
+- Трассировка включает: tick, phase, PC, T, S, AR, flags, in_isr
 - Количество тактов для моделирования ограничено (по умолчанию 100000)
 - Остановка моделирования при:
     - Превышении лимита тактов
@@ -353,7 +353,7 @@
 - Класс `IOController` управляет портами и прерываниями
 - События ввода подаются по расписанию (tick, port, value)
 - При поступлении данных на порт генерируется запрос прерывания
-- CPU проверяет прерывания в начале каждого цикла выборки инструкции
+- ControlUnit проверяет прерывания в начале каждого цикла выборки инструкции
 - Обработчик прерывания `irqN` вызывается для порта N
 
 ## Тестирование
@@ -425,21 +425,21 @@ $ cat out.hex | head -20
 
 ```shell
 $ python machine_cli.py out.bin --trace | head -30
-t=0 pc=0 phase=FETCH_IR T=0 Z=0 AR=0 zero=1 sign=0 in_isr=0
-t=1 pc=0 phase=LATCH_PC T=0 Z=0 AR=0 zero=1 sign=0 in_isr=0
-t=2 pc=1 phase=EXEC T=0 Z=0 AR=0 zero=1 sign=0 in_isr=0
-t=3 pc=8 phase=FETCH_IR T=0 Z=0 AR=0 zero=1 sign=0 in_isr=0
-t=4 pc=8 phase=LATCH_PC T=0 Z=0 AR=0 zero=1 sign=0 in_isr=0
-t=5 pc=9 phase=EXEC T=0 Z=0 AR=0 zero=1 sign=0 in_isr=0
-t=6 pc=9 phase=FETCH_IR T=72 Z=0 AR=0 zero=0 sign=0 in_isr=0
-t=7 pc=9 phase=LATCH_PC T=72 Z=0 AR=0 zero=0 sign=0 in_isr=0
-t=8 pc=10 phase=EXEC T=72 Z=0 AR=0 zero=0 sign=0 in_isr=0
-t=9 pc=10 phase=FETCH_IR T=0 Z=72 AR=0 zero=1 sign=0 in_isr=0
-t=10 pc=10 phase=LATCH_PC T=0 Z=72 AR=0 zero=1 sign=0 in_isr=0
-t=11 pc=11 phase=EXEC T=0 Z=72 AR=0 zero=1 sign=0 in_isr=0
-t=12 pc=11 phase=EXEC T=72 Z=0 AR=0 zero=0 sign=0 in_isr=0
-t=13 pc=11 phase=EXEC T=0 Z=0 AR=0 zero=1 sign=0 in_isr=0
-t=14 pc=11 phase=FETCH_IR T=0 Z=0 AR=0 zero=1 sign=0 in_isr=0
+t=0 pc=0 phase=FETCH_IR T=0 S=0 AR=0 zero=1 sign=0 in_isr=0
+t=1 pc=0 phase=LATCH_PC T=0 S=0 AR=0 zero=1 sign=0 in_isr=0
+t=2 pc=1 phase=EXEC T=0 S=0 AR=0 zero=1 sign=0 in_isr=0
+t=3 pc=8 phase=FETCH_IR T=0 S=0 AR=0 zero=1 sign=0 in_isr=0
+t=4 pc=8 phase=LATCH_PC T=0 S=0 AR=0 zero=1 sign=0 in_isr=0
+t=5 pc=9 phase=EXEC T=0 S=0 AR=0 zero=1 sign=0 in_isr=0
+t=6 pc=9 phase=FETCH_IR T=72 S=0 AR=0 zero=0 sign=0 in_isr=0
+t=7 pc=9 phase=LATCH_PC T=72 S=0 AR=0 zero=0 sign=0 in_isr=0
+t=8 pc=10 phase=EXEC T=72 S=0 AR=0 zero=0 sign=0 in_isr=0
+t=9 pc=10 phase=FETCH_IR T=0 S=72 AR=0 zero=1 sign=0 in_isr=0
+t=10 pc=10 phase=LATCH_PC T=0 S=72 AR=0 zero=1 sign=0 in_isr=0
+t=11 pc=11 phase=EXEC T=0 S=72 AR=0 zero=1 sign=0 in_isr=0
+t=12 pc=11 phase=EXEC T=72 S=0 AR=0 zero=0 sign=0 in_isr=0
+t=13 pc=11 phase=EXEC T=0 S=0 AR=0 zero=1 sign=0 in_isr=0
+t=14 pc=11 phase=FETCH_IR T=0 S=0 AR=0 zero=1 sign=0 in_isr=0
 ...
 CH| Hello, world!
 ```

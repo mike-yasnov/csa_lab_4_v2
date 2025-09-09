@@ -6,7 +6,7 @@ from .datapath import DataPath
 from .io import IOController
 
 
-class CPU:
+class ControlUnit:
     def __init__(
         self,
         instr_mem: list[Instr],
