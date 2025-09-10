@@ -1,27 +1,3 @@
-"""
-ISA (Instruction Set Architecture) для варианта:
-  alg | stack | harv | hw | tick | binary | trap | port | cstr | prob2
-
-Особенности:
-- Стековая машина (data stack + return stack).
-- Гарвардская архитектура (отдельные памяти инструкций и данных).
-- Аппаратные прерывания (trap) по расписанию через портовую модель ввода-вывода.
-- Единая длина машинного слова для инструкций: 32 бита (little-endian при записи в файл).
-- Формат инструкции (uniform):
-
-  ┌────────────┬─────────────────────────────────────┐
-  │ 31 ... 24  │ 23 ... 0                           │
-  ├────────────┼─────────────────────────────────────┤
-  │  opcode    │ arg (адрес/непосредственное/порт)  │
-  └────────────┴─────────────────────────────────────┘
-
-- Отладочный дамп в hex-формате:
-    <address> - <HEXCODE> - <mnemonic>
-
-Примечание: в arg для IN/OUT хранится номер порта; для JMP/JZ/CALL — адрес;
-для PUSHI — непосредственное значение (знаковый 24-битный).
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -99,7 +75,6 @@ def encode(instrs: list[Instr]) -> bytes:
     out = bytearray()
     for ins in instrs:
         word = ((int(ins.opcode) & 0xFF) << 24) | (ins.arg & 0x00FF_FFFF)
-        # little-endian: младший байт первый
         out.extend((word & 0xFF, (word >> 8) & 0xFF, (word >> 16) & 0xFF, (word >> 24) & 0xFF))
     return bytes(out)
 
@@ -109,7 +84,6 @@ def decode(blob: bytes) -> list[Instr]:
     for i in range(0, len(blob), 4):
         if i + 3 >= len(blob):
             break
-        # little-endian: младший байт первый
         word = blob[i] | (blob[i + 1] << 8) | (blob[i + 2] << 16) | (blob[i + 3] << 24)
         opcode = Opcode((word >> 24) & 0xFF)
         arg = word & 0x00FF_FFFF
