@@ -14,7 +14,7 @@ class DataPath:
 
         self.stack: list[int] = []
         self.t: int = 0
-        self.z: int = 0
+        self.s: int = 0
         self.ar: int = 0
         self.io_reg: int = 0
         self.zero: bool = True
@@ -29,7 +29,7 @@ class DataPath:
 
     def _refresh_tz(self):
         self.t = self.stack[-1] & 0xFFFF_FFFF if self.stack else 0
-        self.z = self.stack[-2] & 0xFFFF_FFFF if len(self.stack) >= 2 else 0
+        self.s = self.stack[-2] & 0xFFFF_FFFF if len(self.stack) >= 2 else 0
         self.zero = (self.t & 0xFFFF_FFFF) == 0
         self.sign = (self.t & 0x8000_0000) != 0
 
@@ -96,8 +96,7 @@ class DataPath:
 
     # ALU
     def alu_compute(self, op: Opcode):
-        # Операнды: Z = a, T = b
-        a = self.z & 0xFFFF_FFFF
+        a = self.s & 0xFFFF_FFFF
         b = self.t & 0xFFFF_FFFF
         if op == Opcode.ADD:
             r = (a + b) & 0xFFFF_FFFF

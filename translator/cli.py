@@ -7,7 +7,6 @@ try:
     from .codegen import Codegen
     from .parser import parse_source
 except ImportError:
-    # запуск как пакет из каталога lab_implementation (translator — пакет верхнего уровня)
     from isa import encode, to_hex
     from translator.codegen import Codegen
     from translator.parser import parse_source
