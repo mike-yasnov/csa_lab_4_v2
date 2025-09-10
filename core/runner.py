@@ -25,7 +25,7 @@ def run_machine(
     try:
         while cpu.tick < cpu.tick_limit and not cpu._halted:
             if trace:
-                line = f"t={cpu.tick} pc={cpu.pc} phase={cpu._phase} T={cpu.dp.t} S={cpu.dp.z} AR={cpu.dp.ar} zero={int(cpu.dp.zero)} sign={int(cpu.dp.sign)} in_isr={int(cpu.in_isr)}\n"
+                line = f"t={cpu.tick} pc={cpu.pc} phase={cpu._phase} T={cpu.dp.t} S={cpu.dp.s} AR={cpu.dp.ar} zero={int(cpu.dp.zero)} sign={int(cpu.dp.sign)} in_isr={int(cpu.in_isr)}\n"
                 if trace_out:
                     trace_out.write(line)
                 else:
